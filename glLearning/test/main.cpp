@@ -1,18 +1,18 @@
-#include <glad/glad.h>
+ï»¿#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-//¼ì²é¼üÅÌÊÂ¼ş
+//æ£€æŸ¥é”®ç›˜äº‹ä»¶
 void onKeyPressed(GLFWwindow* window)
 {
-	//Esc¼üÅÌÊÂ¼ş
+	//Escé”®ç›˜äº‹ä»¶
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
 }
 
-//´°¿Ú´óĞ¡¸Ä±ä»Øµ÷
+//çª—å£å¤§å°æ”¹å˜å›è°ƒ
 void onFrameSizeChanged(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
@@ -32,7 +32,7 @@ int main()
 		glfwTerminate();
 		return -1;
 	}
-	//ÉèÖÃµ±Ç°ÉÏÏÂÎÄ
+	//è®¾ç½®å½“å‰ä¸Šä¸‹æ–‡
 	glfwMakeContextCurrent(window);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -41,26 +41,27 @@ int main()
 		return -1;
 	}
 
-	//ÉèÖÃviewport
+	//è®¾ç½®viewport
 	glViewport(0, 0, 800, 480);
 	glfwSetFramebufferSizeCallback(window, onFrameSizeChanged);
 	
-	//Ö÷Ñ­»·
+	//ä¸»å¾ªç¯
 	while (!glfwWindowShouldClose(window))
 	{
 		onKeyPressed(window);
 
-		//ÉèÖÃÇåÆÁÑÕÉ«
+		//è®¾ç½®æ¸…å±é¢œè‰²
 		glClearColor(0.1f, 0.5f, 0.2f, 1.f);
-		//ÇåÆÁ
+		//æ¸…å±
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//½»»¥»º³å
+		//äº¤äº’ç¼“å†²
 		glfwSwapBuffers(window);
+		//äº‹ä»¶
 		glfwPollEvents();
 	}
 
-	//ÊÍ·Å×ÊÔ´
+	//é‡Šæ”¾èµ„æº
 	glfwTerminate();
 
 	return 0;

@@ -26,12 +26,29 @@ void main()\n\
 }\n\
 \0";
 
+const char* fragmentSource2 = "\n\
+#version 330 core\n\
+out vec4 FragColor;\n\
+void main()\n\
+{\n\
+	FragColor = vec4(0.1f, 0.1f, 0.0f, 1.f);\n\
+}\n\
+\0";
+
 
 //顶点数组
 float vertexs[] = {
-	0.0f, 0.0f, 0.0f,
-	-1.f, -1.f, 0.0f,
-	1.f, -1.f, 0.0f
+	0.f, 0.f, 0.f,
+	-1.f, -1.f, 0.f,
+	1.f, -1.f, 0.f,
+
+	-1.f, 1.f, 0.f,
+	0.f, 0.f, 0.f,
+	1.f, 1.f, 0.f,
+
+	1.f, 1.f, 0.f,
+	0.f, 0.f, 0.f,
+	1.f, -1.f, 0.f,
 };
 
 //绘制三角形
@@ -129,7 +146,12 @@ void drawTriangle(GLFWwindow* window)
 		//激活program
 		glUseProgram(program);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, sizeof(vertexs) / sizeof(float) / 3);
+
+		//解绑vao
+		glBindVertexArray(0);
+
+		//std::cout << glGetError() << std::endl;
 		//交互缓冲
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -155,6 +177,11 @@ void drawRectangle(GLFWwindow* window)
 	unsigned int indexs[] = 
 	{
 		0, 1, 2,
+		//0, 2, 3
+	};
+
+	unsigned int indexs2[] =
+	{
 		0, 2, 3
 	};
 	unsigned int VAO, VBO, EBO;
@@ -169,10 +196,28 @@ void drawRectangle(GLFWwindow* window)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexs), vertexs, GL_STATIC_DRAW);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexs), indexs, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 	//解绑vbo vao
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	unsigned int VAO2, VBO2, EBO2;
+	glGenVertexArrays(1, &VAO2);
+	glGenBuffers(1, &VBO2);
+	glGenBuffers(1, &EBO2);
+
+	glBindVertexArray(VAO2);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexs), vertexs, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexs2), indexs2, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT,GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
@@ -193,6 +238,24 @@ void drawRectangle(GLFWwindow* window)
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
+	unsigned int vertexShader2, fragmentShader2, program2;
+	vertexShader2 = glCreateShader(GL_VERTEX_SHADER);
+	fragmentShader2 = glCreateShader(GL_FRAGMENT_SHADER);
+
+	glShaderSource(vertexShader2, 1, &vertexSource, NULL);
+	glShaderSource(fragmentShader2, 1, &fragmentSource2, NULL);
+
+	glCompileShader(vertexShader2);
+	glCompileShader(fragmentShader2);
+
+	program2 = glCreateProgram();
+	glAttachShader(program2, vertexShader2);
+	glAttachShader(program2, fragmentShader2);
+	glLinkProgram(program2);
+
+	glDeleteShader(vertexShader2);
+	glDeleteShader(fragmentShader2);
+
 	while (!glfwWindowShouldClose(window))
 	{
 		onKeyPressed(window);
@@ -201,7 +264,13 @@ void drawRectangle(GLFWwindow* window)
 		glClear(GL_COLOR_BUFFER_BIT);
 		glUseProgram(program);
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		//解绑vao
+		glBindVertexArray(0);
+
+		glUseProgram(program2);
+		glBindVertexArray(VAO2);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 		//解绑vao
 		glBindVertexArray(0);
 

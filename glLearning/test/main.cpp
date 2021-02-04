@@ -134,7 +134,85 @@ void drawTriangle(GLFWwindow* window)
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteProgram(program);
 	
+}
+
+//绘制矩形，使用EBO
+void drawRectangle(GLFWwindow* window)
+{
+	float vertexs[] = 
+	{
+		-0.5f, -0.5f, 0.f,
+		-0.5f, 0.5f, 0.f,
+		0.5f, 0.5f, 0.f,
+		0.5f, -0.5f, 0.f
+	};
+
+	unsigned int indexs[] = 
+	{
+		0, 1, 2,
+		0, 2, 3
+	};
+	unsigned int VAO, VBO, EBO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexs), vertexs, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexs), indexs, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	//解绑vbo vao
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	unsigned int vertexShader, fragmentShader, program;
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexSource, NULL);
+	glCompileShader(vertexShader);
+
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+	glCompileShader(fragmentShader);
+
+	program = glCreateProgram();
+	glAttachShader(program, vertexShader);
+	glAttachShader(program, fragmentShader);
+	glLinkProgram(program);
+
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+
+	while (!glfwWindowShouldClose(window))
+	{
+		onKeyPressed(window);
+		
+		glClearColor(0.1f, 0.3f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glUseProgram(program);
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//解绑vao
+		glBindVertexArray(0);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
+	glDeleteProgram(program);
 }
 
 //检查键盘事件
@@ -184,7 +262,8 @@ int main()
 	glViewport(0, 0, 800, 480);
 	glfwSetFramebufferSizeCallback(window, onFrameSizeChanged);
 
-	drawTriangle(window);
+	//drawTriangle(window);
+	drawRectangle(window);
 
 	getchar();
 	

@@ -1,59 +1,56 @@
 ﻿#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <math.h>
 
 //函数声明
 void onKeyPressed(GLFWwindow* window);
 
-//顶点着色器源码
-const char* vertexSource = "\n\
-#version 330 core\n\
-layout(location = 0) in vec3 aPos;\n\
-\n\
-void main()\n\
-{\n\
-	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n\
-}\n\
-\0\
-";
-
-const char* fragmentSource = "\n\
-#version 330 core\n\
-out vec4 FragColor;\n\
-void main()\n\
-{\n\
-	FragColor = vec4(0.5f, 0.1f, 0.3f, 1.f);\n\
-}\n\
-\0";
-
-const char* fragmentSource2 = "\n\
-#version 330 core\n\
-out vec4 FragColor;\n\
-void main()\n\
-{\n\
-	FragColor = vec4(0.1f, 0.1f, 0.0f, 1.f);\n\
-}\n\
-\0";
-
-
-//顶点数组
-float vertexs[] = {
-	0.f, 0.f, 0.f,
-	-1.f, -1.f, 0.f,
-	1.f, -1.f, 0.f,
-
-	-1.f, 1.f, 0.f,
-	0.f, 0.f, 0.f,
-	1.f, 1.f, 0.f,
-
-	1.f, 1.f, 0.f,
-	0.f, 0.f, 0.f,
-	1.f, -1.f, 0.f,
-};
 
 //绘制三角形
 void drawTriangle(GLFWwindow* window)
 {
+
+	//顶点着色器源码
+	const char* vertexSource = "\n\
+		#version 330 core\n\
+		layout(location = 0) in vec3 aPos;\n\
+		layout(location = 1) in vec3 aColor;\n\
+		out vec3 ourColor;\n\
+		\n\
+		void main()\n\
+		{\n\
+			gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n\
+			ourColor = aColor;\n\
+		}\n\
+		\0\
+		";
+
+	const char* fragmentSource = "\n\
+		#version 330 core\n\
+		out vec4 FragColor;\n\
+		in vec3 ourColor;\n\
+		void main()\n\
+		{\n\
+			FragColor = vec4(ourColor, 1.f);\n\
+		}\n\
+		\0";
+
+	//顶点数组
+	float vertexs[] = {
+		0.f, 0.f, 0.f, 1.f, 0.f, 0.f,
+		-1.f, -1.f, 0.f, 0.f, 1.f, 0.f,
+		1.f, -1.f, 0.f, 0.f, 0.f, 1.f,
+
+		-1.f, 1.f, 0.f, 1.f, 0.f, 0.f,
+		0.f, 0.f, 0.f, 0.f, 1.f, 0.f,
+		1.f, 1.f, 0.f, 0.f, 0.f, 1.f,
+
+		1.f, 1.f, 0.f, 0.f, 0.f, 1.f,
+		0.f, 0.f, 0.f, 0.f, 1.f, 0.f,
+		1.f, -1.f, 0.f, 1.f, 0.f, 0.f,
+	};
+
 	unsigned int VAO;
 	//生成VAO
 	glGenVertexArrays(1, &VAO);
@@ -101,7 +98,7 @@ void drawTriangle(GLFWwindow* window)
 
 	if (!success)
 	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
 		std::cout << "Compile Fragment Error:" << infoLog << std::endl;
 		return;
 	}
@@ -129,9 +126,12 @@ void drawTriangle(GLFWwindow* window)
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 	//告诉program顶点数据布局
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	//启用顶点属性
 	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	glBindVertexArray(0);
 	
@@ -146,7 +146,7 @@ void drawTriangle(GLFWwindow* window)
 		//激活program
 		glUseProgram(program);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, sizeof(vertexs) / sizeof(float) / 3);
+		glDrawArrays(GL_TRIANGLES, 0, sizeof(vertexs) / sizeof(float) / 6);
 
 		//解绑vao
 		glBindVertexArray(0);
@@ -166,6 +166,38 @@ void drawTriangle(GLFWwindow* window)
 //绘制矩形，使用EBO
 void drawRectangle(GLFWwindow* window)
 {
+
+	//顶点着色器源码
+	const char* vertexSource = "\n\
+		#version 330 core\n\
+		layout(location = 0) in vec3 aPos;\n\
+		\n\
+		void main()\n\
+		{\n\
+			gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n\
+		}\n\
+		\0\
+		";
+
+	const char* fragmentSource = "\n\
+		#version 330 core\n\
+		out vec4 FragColor;\n\
+		void main()\n\
+		{\n\
+			FragColor = vec4(0.5f, 0.1f, 0.3f, 1.f);\n\
+		}\n\
+		\0";
+
+	const char* fragmentSource2 = "\n\
+		#version 330 core\n\
+		out vec4 FragColor;\n\
+		uniform vec4 ourColor;\n\
+		void main()\n\
+		{\n\
+			FragColor = ourColor;\n\
+		}\n\
+		\0";
+
 	float vertexs[] = 
 	{
 		-0.5f, -0.5f, 0.f,
@@ -270,6 +302,12 @@ void drawRectangle(GLFWwindow* window)
 
 		glUseProgram(program2);
 		glBindVertexArray(VAO2);
+		//获取ourColor的位置
+		int location = glGetUniformLocation(program2, "ourColor");
+		//更新ourColor的值
+		float redValue = sin(glfwGetTime()) / 2.f + 0.5f;
+		glUniform4f(location, redValue, 0.2f, 0.1f, 1.f);
+
 		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 		//解绑vao
 		glBindVertexArray(0);
@@ -331,8 +369,8 @@ int main()
 	glViewport(0, 0, 800, 480);
 	glfwSetFramebufferSizeCallback(window, onFrameSizeChanged);
 
-	//drawTriangle(window);
-	drawRectangle(window);
+	drawTriangle(window);
+	//drawRectangle(window);
 
 	getchar();
 	

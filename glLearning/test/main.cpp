@@ -2,9 +2,54 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <math.h>
+#include "ShaderProgram.h"
 
 //函数声明
 void onKeyPressed(GLFWwindow* window);
+
+void testShaderProgram(GLFWwindow* window)
+{
+	//为什么左下角是黑色？
+	//顶点着色器将顶点坐标作为顶点颜色，则左下角的颜色值为vec3(-0.5f, -0.5f, 0.f);
+	//因为颜色值标准为0 - 1，所以该颜色最终格式化为了(0.f, 0.f, 0.f)即黑色
+	//同时在进行计算是，比较靠近左下角的点算出来颜色值为负值，所以和顶点一样都显示为黑色
+	float verteies[] = 
+	{
+		-0.5f, -0.5f, 0.f,
+		0.f, 0.5f, 0.f,
+		0.5f, -0.5f, 0.f
+	};
+
+	unsigned int VAO, VBO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(verteies), verteies, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+
+	glClearColor(0.f, 0.f, 0.f, 1.f);
+	auto shaderProgram = ShaderProgram("shaders/testVert.vs", "shaders/testFrag.fs");
+
+	while (!glfwWindowShouldClose(window))
+	{
+		onKeyPressed(window);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		shaderProgram.use();
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+}
 
 
 //绘制三角形
@@ -369,8 +414,9 @@ int main()
 	glViewport(0, 0, 800, 480);
 	glfwSetFramebufferSizeCallback(window, onFrameSizeChanged);
 
-	drawTriangle(window);
+	//drawTriangle(window);
 	//drawRectangle(window);
+	testShaderProgram(window);
 
 	getchar();
 	

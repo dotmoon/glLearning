@@ -3,6 +3,7 @@
 #include <iostream>
 #include <math.h>
 #include "ShaderProgram.h"
+#include "stb_image.h"
 
 //函数声明
 void onKeyPressed(GLFWwindow* window);

@@ -14,6 +14,7 @@ public:
 
 
 	void use();
+	unsigned int getID() { return _programID; }
 private:
 	unsigned int _programID = 0;//shader program id
 };

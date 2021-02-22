@@ -4,9 +4,11 @@ layout(location = 1) in vec2 aTexCords;
 out vec3 aColor;
 out vec2 TexCord;
 
+uniform mat4 transform;
+
 void main()
 {
-	gl_Position = vec4(aPos, 1.f);
+	gl_Position = transform * vec4(aPos.xyz, 1.f);
 	aColor = aPos;
 	TexCord = aTexCords;
 }

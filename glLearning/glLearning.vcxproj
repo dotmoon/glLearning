@@ -69,7 +69,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>D:\workspace_lijun\Learn\commonLibs\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\workspace_lijun\Learn\commonLibs\include;D:\workspace_lijun\Learn\glLearning\glLearning\library;$(IncludePath)</IncludePath>
     <LibraryPath>D:\workspace_lijun\Learn\commonLibs\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

@@ -4,6 +4,9 @@
 #include <math.h>
 #include "ShaderProgram.h"
 #include "stb_image.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 //函数声明
 void onKeyPressed(GLFWwindow* window);
@@ -91,6 +94,15 @@ void testShaderProgram(GLFWwindow* window)
 	{
 		onKeyPressed(window);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glm::mat4 trans(1.f);
+		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+		trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 1.f));
+		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
+		
+
+		unsigned int transformLoc = glGetUniformLocation(shaderProgram.getID(), "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
 		shaderProgram.use();
 		glBindTexture(GL_TEXTURE_2D, texture);

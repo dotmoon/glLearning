@@ -8,18 +8,64 @@
 //函数声明
 void onKeyPressed(GLFWwindow* window);
 
+//加载纹理
+unsigned int loadTexture(const char* fileName, int* width, int* height)
+{
+	int nrchannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(fileName, width, height, &nrchannels, 0);
+
+	//生成纹理
+	unsigned int texture = 0;
+	if (data)
+	{
+		glGenTextures(1, &texture);
+
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, *width, *height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);//生成多级渐远纹理
+
+		//释放内存
+		stbi_image_free(data);
+	}
+	else
+		std::cout << "Failed to load texture:" << fileName << std::endl;
+	
+	return texture;
+}
+
 void testShaderProgram(GLFWwindow* window)
 {
 	//为什么左下角是黑色？
 	//顶点着色器将顶点坐标作为顶点颜色，则左下角的颜色值为vec3(-0.5f, -0.5f, 0.f);
 	//因为颜色值标准为0 - 1，所以该颜色最终格式化为了(0.f, 0.f, 0.f)即黑色
-	//同时在进行计算是，比较靠近左下角的点算出来颜色值为负值，所以和顶点一样都显示为黑色
+	//同时在进行计算时，比较靠近左下角的点算出来颜色值为负值，所以和顶点一样都显示为黑色
 	float verteies[] = 
 	{
-		-0.5f, -0.5f, 0.f,
-		0.f, 0.5f, 0.f,
-		0.5f, -0.5f, 0.f
+		-1.f, -1.f, 0.f, 0.f, 0.f,
+		-1.f, 1.f, 0.f, 0.f, 1.f,
+		1.f, 1.f, 0.f, 1.f, 1.f,
+		-1.f, -1.f, 0.f, 0.f, 0.f,
+		1.f, 1.f, 0.f, 1.f, 1.f,
+		1.f, -1.f, 0.f, 1.f, 0.f
 	};
+
+	////设置顶点对应的纹理坐标
+	//float textureCoords[] =
+	//{
+
+	//};
+
+	//设置纹理环绕方式
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	//设置纹理过滤方式
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int width, height, texture;
+	texture = loadTexture("images/course_bg0.jpg", &width, &height);
 
 	unsigned int VAO, VBO;
 	glGenVertexArrays(1, &VAO);
@@ -30,8 +76,11 @@ void testShaderProgram(GLFWwindow* window)
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(verteies), verteies, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	glBindVertexArray(0);
 
@@ -44,8 +93,9 @@ void testShaderProgram(GLFWwindow* window)
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shaderProgram.use();
+		glBindTexture(GL_TEXTURE_2D, texture);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 		
 		glfwSwapBuffers(window);
 		glfwPollEvents();

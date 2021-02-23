@@ -76,7 +76,7 @@ ShaderProgram::ShaderProgram(const char* vertPath, const char* fragmentPath)
 
 ShaderProgram::~ShaderProgram()
 {
-
+	glDeleteProgram(_programID);
 }
 
 void ShaderProgram::use()

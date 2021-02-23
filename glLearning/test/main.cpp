@@ -8,6 +8,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+float screenWidth = 800;//屏宽
+float screenHeight = 480;//屏高
+
 //函数声明
 void onKeyPressed(GLFWwindow* window);
 
@@ -35,6 +38,96 @@ unsigned int loadTexture(const char* fileName, int* width, int* height)
 		std::cout << "Failed to load texture:" << fileName << std::endl;
 	
 	return texture;
+}
+
+void test3D(GLFWwindow* window)
+{
+
+	//通过model matrix、view matrix、projection matrix的变换，实现3D效果
+	int width, height;
+	unsigned int textureID = loadTexture("images/session_result_kada_2.png", &width, &height);
+
+	if (textureID == 0)//纹理加载失败
+		return;
+
+	//设置模型矩阵
+	glm::mat4 model(1.f);
+	model = glm::rotate(model, glm::radians(-55.f), glm::vec3(1.f, 0.f, 0.f));
+
+	//设置观察矩阵
+	glm::mat4 view(1.f);
+	view = glm::translate(view, glm::vec3(0.f, 0.f, -3.f));
+
+	//投影矩阵
+	glm::mat4 projection(1.f);
+	projection = glm::perspective(glm::radians(45.f), screenWidth / screenHeight, 0.1f, 100.f);
+
+	//顶点数组
+	float vertices[] = {
+		-0.5f, -0.5f, 0.f, 0.f, 0.f,
+		-0.5f, 0.5f, 0.f, 0.f, 1.f,
+		0.5f, 0.5f, 0.f, 1.f, 1.f,
+		0.5f, -0.5f, 0.f, 1.f, 0.f
+	};
+
+	//顶点索引数组
+	unsigned indeies[] = {
+		0, 1, 2,
+		0, 3, 2
+	};
+
+	unsigned int VAO, VBO, EBO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indeies), indeies, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	auto shaderProgram = ShaderProgram("shaders/testVert.vs", "shaders/testFrag.fs");
+	while (!glfwWindowShouldClose(window))
+	{
+		onKeyPressed(window);
+		glClear(GL_COLOR_BUFFER_BIT);//清屏
+
+		glm::mat4 trans(1.f);
+		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+		trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 1.f));
+		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.f, 0.f, 1.f));
+
+
+		unsigned int transformLoc = glGetUniformLocation(shaderProgram.getID(), "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+		glBindTexture(GL_TEXTURE_2D, textureID);//绑定纹理
+		shaderProgram.use();
+		glBindVertexArray(VAO);
+		//绘制三角形
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+
+		std::cout << glGetError() << std::endl;
+
+		glBindVertexArray(0);
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 }
 
 void testShaderProgram(GLFWwindow* window)
@@ -477,9 +570,12 @@ int main()
 	glViewport(0, 0, 800, 480);
 	glfwSetFramebufferSizeCallback(window, onFrameSizeChanged);
 
+	glClearColor(0.1f, 0.5f, 0.2f, 1.f);//设置清屏颜色
+
 	//drawTriangle(window);
 	//drawRectangle(window);
-	testShaderProgram(window);
+	//testShaderProgram(window);
+	test3D(window);
 
 	getchar();
 	

@@ -51,7 +51,7 @@ void test3D(GLFWwindow* window)
 		return;
 
 	//设置模型矩阵
-	glm::mat4 model(1.f);
+	//glm::mat4 model(1.f);
 	//model = glm::rotate(model, glm::radians(-55.f), glm::vec3(1.f, 0.f, 0.f));
 
 	//设置观察矩阵
@@ -121,6 +121,19 @@ void test3D(GLFWwindow* window)
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+
 	//顶点索引数组
 	unsigned indeies[] = {
 		0, 1, 2,
@@ -172,10 +185,7 @@ void test3D(GLFWwindow* window)
 		onKeyPressed(window);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//清屏
 
-		model = glm::rotate(model, (float)glfwGetTime()/ 10000 * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-
-		unsigned int transformLoc = glGetUniformLocation(shaderProgram.getID(), "model");
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(model));
+		unsigned int transformLoc;
 
 		transformLoc = glGetUniformLocation(shaderProgram.getID(), "view");
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(view));
@@ -188,8 +198,19 @@ void test3D(GLFWwindow* window)
 		glBindVertexArray(VAO);
 		//绘制三角形
 		//glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, (void*)0);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+		for (int i = 0; i < 10; i++)
+		{
+			glm::mat4 model(1.f);
+			model = glm::translate(model, cubePositions[i]);
+			float angle = 20.f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+
+			transformLoc = glGetUniformLocation(shaderProgram.getID(), "model");
+			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(model));
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		
 		//std::cout << glGetError() << std::endl;
 
 		glBindVertexArray(0);
